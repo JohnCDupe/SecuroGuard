@@ -24,8 +24,15 @@ java {
 
 repositories {
     maven("https://maven.fabricmc.net/") { name = "Fabric" }
-    // Mod Menu (optional integration). Isolated to this module.
-    maven("https://maven.terraformersmc.com/releases/") { name = "TerraformersMC" }
+    // Mod Menu is optional and used only for compile/dev integration. Resolve the
+    // published release from Modrinth's Maven with an exclusive group filter so
+    // no other dependency can be sourced from this repository.
+    exclusiveContent {
+        forRepository {
+            maven("https://api.modrinth.com/maven") { name = "Modrinth" }
+        }
+        filter { includeGroup("maven.modrinth") }
+    }
 }
 
 dependencies {
@@ -35,7 +42,7 @@ dependencies {
     modImplementation("net.fabricmc.fabric-api:fabric-api:${property("fabricApiVersion")}")
 
     // Mod Menu provides the config-screen entry point. Optional at runtime.
-    modImplementation("com.terraformersmc:modmenu:${property("modmenuVersion")}")
+    modImplementation("maven.modrinth:modmenu:${property("modmenuVersion")}")
 
     // The loader-neutral security engine. Bundled into the mod jar with `include`
     // so it ships alongside the mod without a separate install step.
