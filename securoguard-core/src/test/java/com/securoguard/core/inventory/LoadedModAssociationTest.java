@@ -53,6 +53,16 @@ class LoadedModAssociationTest {
     }
 
     @Test
+    void indexAcceptsFileUriOrigins(@TempDir Path dir) {
+        Path mod = dir.resolve("mods/a.jar").toAbsolutePath().normalize();
+        InstalledMod installed = new InstalledMod("a", "A", "1", "fabric",
+                List.of(mod.toUri().toString()), false, false);
+
+        LoadedModIndex index = new LoadedModIndex(List.of(installed));
+        assertEquals("a", index.forAbsolutePath(mod.toString()).orElseThrow().modId());
+    }
+
+    @Test
     void scanServiceMarksLoadedAsModFromDescriptors(@TempDir Path game) throws IOException {
         InstancePaths paths = InstancePaths.ofGameDir(game);
         Path sodium = TestArchives.writeFile(paths.modsDir(), "sodium.jar",

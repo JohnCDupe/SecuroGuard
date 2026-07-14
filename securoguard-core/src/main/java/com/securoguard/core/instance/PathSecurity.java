@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.regex.Pattern;
 
 /**
@@ -196,14 +197,30 @@ public final class PathSecurity {
             return true;
         }
         try {
-            // A reparse point (junction) reports a different real path than its
-            // lexical normalized form even though isSymbolicLink() may be false.
             if (!Files.exists(path, LinkOption.NOFOLLOW_LINKS)) {
                 return false;
             }
+
+            // Some Windows reparse points (notably junctions) are not exposed by
+            // Files.isSymbolicLink(). NOFOLLOW attributes still classify these as
+            // special filesystem objects, so treat them conservatively.
+            BasicFileAttributes attributes = Files.readAttributes(
+                    path, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+            if (attributes.isSymbolicLink() || attributes.isOther()) {
+                return true;
+            }
+
+            // Compare against the canonical form of the parent. This detects a
+            // redirect at the final component without falsely flagging a regular
+            // file because an ancestor used an equivalent Windows 8.3 spelling.
+            Path absolute = path.toAbsolutePath().normalize();
+            Path parent = absolute.getParent();
+            if (parent == null) {
+                return false;
+            }
+            Path expected = parent.toRealPath().resolve(absolute.getFileName()).normalize();
             Path real = path.toRealPath();
-            Path lexical = path.toAbsolutePath().normalize();
-            return !real.equals(lexical);
+            return !real.equals(expected);
         } catch (IOException e) {
             // If we cannot resolve it, err on the side of flagging it.
             return true;

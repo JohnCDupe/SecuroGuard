@@ -3,6 +3,8 @@ package com.securoguard.core.instance;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -63,5 +65,11 @@ class PathSecurityTest {
         // With no links anywhere, a contained target has no redirected ancestor.
         Path target = realRoot.resolve("mods").resolve("a.jar");
         assertFalse(PathSecurity.hasRedirectedAncestor(realRoot, target));
+    }
+
+    @Test
+    void regularFileIsNotClassifiedAsRedirect(@TempDir Path dir) throws IOException {
+        Path regularFile = Files.writeString(dir.resolve("ordinary.jar"), "contents");
+        assertFalse(PathSecurity.isLinkOrRedirect(regularFile));
     }
 }
