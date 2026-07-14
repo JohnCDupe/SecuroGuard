@@ -1,0 +1,65 @@
+name: Bug report
+description: Report a problem with SecuroGuard
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug.
+
+        **Do not report security vulnerabilities here.** Use the private process in
+        SECURITY.md. **Never attach live malware, access tokens, credential files, or
+        private world/user files.** Share hashes and redacted output instead.
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Pre-flight
+      options:
+        - label: This is not a security vulnerability (those go through SECURITY.md).
+          required: true
+        - label: I will not attach malware, tokens, credentials, or private files.
+          required: true
+        - label: I understand that "unknown" does not mean "malicious".
+          required: true
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      options:
+        - Fabric mod (in-game)
+        - Sentinel (command line)
+        - Core engine / build
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: SecuroGuard version, Minecraft, Fabric Loader/API, Java, OS.
+      placeholder: "SecuroGuard 0.1.0, MC 1.21.11, Fabric 0.19.3, Java 21, Windows 11"
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant output / logs (redacted)
+      description: Paste redacted output. Use the Sentinel's `--redact` flag where possible.
+      render: text

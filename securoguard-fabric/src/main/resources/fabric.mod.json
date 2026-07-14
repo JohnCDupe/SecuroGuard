@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "securoguard",
+  "version": "${version}",
+  "name": "SecuroGuard",
+  "description": "Minecraft-aware security monitor: detects and quarantines JARs added to the mods directory during a session. Not a replacement for OS antivirus.",
+  "authors": ["SecuroGuard contributors"],
+  "contact": {
+    "homepage": "https://github.com/JohnCDupe/SecuroGuard",
+    "sources": "https://github.com/JohnCDupe/SecuroGuard",
+    "issues": "https://github.com/JohnCDupe/SecuroGuard/issues"
+  },
+  "license": "Apache-2.0",
+  "icon": "assets/securoguard/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["com.securoguard.fabric.SecuroGuardClient"],
+    "modmenu": ["com.securoguard.fabric.ui.ModMenuIntegration"]
+  },
+  "depends": {
+    "fabricloader": ">=${loaderVersion}",
+    "minecraft": "~1.21.11",
+    "java": ">=21",
+    "fabric-api": "*"
+  },
+  "suggests": {
+    "modmenu": "*"
+  }
+}

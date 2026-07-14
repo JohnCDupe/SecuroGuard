@@ -1,0 +1,39 @@
+{
+  "securoguard.name": "SecuroGuard",
+  "securoguard.screen.title": "SecuroGuard",
+  "securoguard.findings.title": "SecuroGuard — Findings",
+  "securoguard.detail.title": "SecuroGuard — Finding Detail",
+
+  "securoguard.detail.path": "Path:",
+  "securoguard.detail.sha256": "SHA-256:",
+  "securoguard.detail.action": "Recommended:",
+
+  "securoguard.button.open_findings": "Open Findings",
+  "securoguard.button.rescan": "Re-scan Now",
+  "securoguard.button.disconnect": "Disconnect",
+  "securoguard.button.quarantine": "Quarantine…",
+  "securoguard.button.dismiss": "Dismiss",
+  "securoguard.button.confirm_quarantine": "Confirm Quarantine",
+  "securoguard.button.done": "Done",
+  "securoguard.button.back": "Back",
+  "securoguard.button.prev": "◀ Prev",
+  "securoguard.button.next": "Next ▶",
+
+  "securoguard.findings.empty": "No findings. Unknown files are not shown as threats.",
+  "securoguard.findings.page": "Page %s/%s — %s finding(s)",
+
+  "securoguard.status.quarantining": "Quarantining…",
+
+  "securoguard.confirm.quarantine.msg": "Move '%s' to quarantine? It will not be deleted, and can be restored.",
+  "securoguard.disconnect.reason": "SecuroGuard: you disconnected after a security warning.",
+
+  "securoguard.toast.critical.title": "SecuroGuard: CRITICAL",
+  "securoguard.toast.critical.desc": "[SecuroGuard] CRITICAL: a new JAR appeared in your mods folder during this session.",
+  "securoguard.warn.open_screen": "Open the SecuroGuard screen (Mod Menu → SecuroGuard) to review.",
+  "securoguard.warn.unknown_not_malicious": "Note: 'unknown' does NOT mean malicious.",
+
+  "securoguard.command.status": "SecuroGuard status: monitoring=%s, baseline=%s, findings=%s",
+  "securoguard.command.scan.started": "SecuroGuard: re-scan started…",
+  "securoguard.command.findings.none": "SecuroGuard: no findings.",
+  "securoguard.command.findings.header": "SecuroGuard findings (%s):"
+}

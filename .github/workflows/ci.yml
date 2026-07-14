@@ -1,0 +1,91 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+# Least-privilege: CI only needs to read the repository.
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build & test (${{ matrix.os }}, Java 21)
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      # Actions are pinned to full commit SHAs (with the version in a comment) so a
+      # moving tag cannot alter what runs in CI for a security-focused project.
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
+
+      - name: Set up JDK 21 (Temurin)
+        uses: actions/setup-java@0f481fcb613427c0f801b606911222b5b6f3083a # v5.5.0
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+
+      # Full build on both OSes: compiles core/sentinel/fabric, runs unit + integration
+      # tests, builds the Sentinel distribution and the remapped Fabric mod jar.
+      - name: Build and test (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          chmod +x ./gradlew
+          ./gradlew build --no-daemon --stacktrace
+
+      - name: Build and test (Windows)
+        if: runner.os == 'Windows'
+        run: .\gradlew.bat build --no-daemon --stacktrace
+
+      # Verify + checksum the production artifacts (Linux only). If any of the build,
+      # test, verify or checksum steps failed, the steps below (which have no
+      # `if: always()`) do NOT run, so a failed build can never publish a partial
+      # release-looking artifact.
+      - name: Verify release artifacts and generate checksums
+        if: runner.os == 'Linux'
+        run: ./gradlew verifyReleaseArtifacts releaseChecksums --no-daemon
+
+      - name: Upload production Fabric mod jar
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: securoguard-fabric-jar
+          path: |
+            securoguard-fabric/build/libs/*+mc*.jar
+            securoguard-fabric/build/libs/*+mc*.jar.sha256
+            !securoguard-fabric/build/libs/*-sources.jar
+            !securoguard-fabric/build/libs/*-dev.jar
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload Sentinel distributions
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: securoguard-sentinel-dist
+          path: |
+            securoguard-sentinel/build/distributions/*.zip
+            securoguard-sentinel/build/distributions/*.tar
+            securoguard-sentinel/build/distributions/*.sha256
+            SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 14
+
+      # Diagnostics: always upload test reports, even on failure.
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: test-reports-${{ matrix.os }}
+          path: '**/build/reports/tests/**'
+          if-no-files-found: ignore
+          retention-days: 7

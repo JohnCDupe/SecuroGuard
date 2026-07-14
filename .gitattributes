@@ -1,0 +1,25 @@
+# Normalize line endings: commit LF, let Git handle the working-tree conversion.
+* text=auto eol=lf
+
+# Scripts must keep their platform line endings.
+*.bat        text eol=crlf
+*.cmd        text eol=crlf
+gradlew      text eol=lf
+*.sh         text eol=lf
+
+# Source and resources are text.
+*.java       text
+*.kts        text
+*.gradle     text
+*.json       text
+*.md         text
+*.properties text
+*.yml        text
+*.yaml       text
+
+# Binaries: never touch line endings.
+*.jar        binary
+*.png        binary
+*.ico        binary
+*.zip        binary
+gradle/wrapper/gradle-wrapper.jar binary

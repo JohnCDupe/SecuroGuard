@@ -1,0 +1,36 @@
+name: Feature request
+description: Suggest an improvement to SecuroGuard
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the suggestion. For security-sensitive ideas, please use the
+        private process in SECURITY.md instead of a public issue.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / motivation
+      description: What are you trying to achieve? What is missing or awkward today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What would you like SecuroGuard to do?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope check
+      options:
+        - label: This does not add telemetry, accounts, file-content uploads, or paid features.
+          required: true
+        - label: This does not weaken existing security protections.
+          required: true

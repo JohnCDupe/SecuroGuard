@@ -1,0 +1,15 @@
+version: 2
+updates:
+  # Keep GitHub Actions pinned versions current.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+
+  # Gradle dependencies (Gson, JUnit; Minecraft/Fabric are managed via gradle.properties).
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5

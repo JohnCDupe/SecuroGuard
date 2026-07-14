@@ -1,0 +1,17 @@
+{
+  "_comment": "Copy this to <instance>/config/securoguard.json to customise SecuroGuard. All fields are optional; defaults shown here are the built-in defaults. Numeric values are validated and clamped to safe ranges on load. No secrets or tokens belong in this file.",
+
+  "onlineReputationEnabled": false,
+  "quarantineEnabled": true,
+  "knownMaliciousHashes": [],
+
+  "_monitoredDirectories": "Extra instance-RELATIVE directories to scan/monitor beyond mods. Paths escaping the instance are rejected.",
+  "monitoredDirectories": [],
+
+  "watchQuietPeriodMillis": 1000,
+  "reconcileIntervalMillis": 30000,
+
+  "_scanLimits": "Bounds so a pathological instance cannot make a scan run unbounded. Oversized files are reported as skipped, not silently ignored.",
+  "maxScannedFiles": 200000,
+  "maxScannedFileSizeBytes": 536870912
+}

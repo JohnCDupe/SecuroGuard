@@ -1,0 +1,58 @@
+# Gradle
+.gradle/
+build/
+*/build/
+!gradle/wrapper/gradle-wrapper.jar
+gradle-app.setting
+.gradletasknamecache
+
+# Loom / Minecraft dev
+run/
+*/run/
+.fabric/
+*.class
+
+# IDEs
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.project
+.classpath
+*.launch
+bin/
+out/
+.metadata/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Portable toolchains / local tooling (never commit JDKs or Gradle downloads)
+.securoguard-tools/
+*.jdk
+jdk-*/
+gradle-*/
+
+# Logs and local/test-generated state
+*.log
+logs/
+securoguard/            # per-instance SecuroGuard data (baselines, quarantine, logs)
+*.corrupt-*
+*.tmp
+
+# Local secrets / env (none are used by the project, but never commit them)
+*.env
+.env
+secrets.*
+
+# Generated release checksums
+SHA256SUMS.txt
+*.sha256
+
+# Local editor and tool state
+# Keep machine-specific or personal working-directory patterns in
+# .git/info/exclude (local-only), not in this tracked file.

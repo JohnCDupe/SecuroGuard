@@ -1,0 +1,169 @@
+name: Release
+
+# Runs only when a version tag is pushed (e.g. v0.1.0-rc.1). This workflow is
+# provided for the maintainer; it is not executed as part of ordinary development.
+#
+# Structure:
+#   validate  - builds, tests and verifies the EXACT tagged commit on BOTH
+#               ubuntu-latest and windows-latest. Read-only permissions.
+#   publish   - runs once on ubuntu-latest, only after both validation legs pass.
+#               Performs the canonical build that produces the uploaded artifacts
+#               and creates the GitHub release. This is the only job with write
+#               access.
+on:
+  push:
+    tags:
+      - 'v*'
+
+# Least privilege by default: read-only. The publish job opts in to contents:write.
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - name: Checkout tagged commit
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
+
+      - name: Set up JDK 21 (Temurin)
+        uses: actions/setup-java@0f481fcb613427c0f801b606911222b5b6f3083a # v5.5.0
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+
+      - name: Build, test and verify artifacts (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          chmod +x ./gradlew
+          ./gradlew clean build verifyReleaseArtifacts --no-daemon --stacktrace
+
+      - name: Build, test and verify artifacts (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          .\gradlew.bat clean build verifyReleaseArtifacts --no-daemon --stacktrace
+
+  publish:
+    name: Publish GitHub release
+    needs: validate
+    runs-on: ubuntu-latest
+    # Only this job needs write access, and it runs exactly once after both
+    # validation legs (ubuntu + windows) have passed.
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout tagged commit
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@3f131e8634966bd73d06cc69884922b02e6faf92 # v6.2.0
+
+      - name: Set up JDK 21 (Temurin)
+        uses: actions/setup-java@0f481fcb613427c0f801b606911222b5b6f3083a # v5.5.0
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+
+      - name: Validate tag matches project version and is not a SNAPSHOT
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$(grep -E '^version[[:space:]]*=' gradle.properties | sed -E 's/^version[[:space:]]*=[[:space:]]*//' | tr -d '[:space:]')"
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          echo "project version: $VERSION"
+          echo "tag version:     $TAG_VERSION"
+          if [ "$VERSION" != "$TAG_VERSION" ]; then
+            echo "::error::Tag ($TAG_VERSION) does not match gradle.properties version ($VERSION)"; exit 1
+          fi
+          case "$VERSION" in
+            *-SNAPSHOT) echo "::error::Refusing to release a -SNAPSHOT version"; exit 1 ;;
+          esac
+          PRERELEASE=false
+          case "$VERSION" in
+            *-rc.*|*-alpha*|*-beta*) PRERELEASE=true ;;
+          esac
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "prerelease=$PRERELEASE" >> "$GITHUB_OUTPUT"
+
+      - name: Canonical build (produces the artifacts that are published)
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x ./gradlew
+          ./gradlew clean build verifyReleaseArtifacts releaseChecksums --no-daemon --stacktrace
+
+      - name: Collect production artifacts
+        id: artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="${{ steps.version.outputs.version }}"
+          # Production Fabric jar only — never the -sources or -dev jars.
+          FABRIC_JAR="$(ls securoguard-fabric/build/libs/*+mc*.jar | grep -v -- '-sources.jar' | grep -v -- '-dev.jar')"
+          ZIP="securoguard-sentinel/build/distributions/securoguard-${VERSION}.zip"
+          TAR="securoguard-sentinel/build/distributions/securoguard-${VERSION}.tar"
+          for f in "$FABRIC_JAR" "$ZIP" "$TAR" SHA256SUMS.txt; do
+            test -f "$f" || { echo "::error::Missing release artifact $f"; exit 1; }
+          done
+          {
+            echo "fabric_jar=$FABRIC_JAR"
+            echo "zip=$ZIP"
+            echo "tar=$TAR"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Publish GitHub release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          FABRIC_JAR="${{ steps.artifacts.outputs.fabric_jar }}"
+          ZIP="${{ steps.artifacts.outputs.zip }}"
+          TAR="${{ steps.artifacts.outputs.tar }}"
+          PRERELEASE_FLAG=""
+          if [ "${{ steps.version.outputs.prerelease }}" = "true" ]; then
+            PRERELEASE_FLAG="--prerelease"
+          fi
+          cat > release-notes.md <<'EOF'
+          SecuroGuard release.
+
+          Artifacts:
+          - Fabric mod jar (install into your instance's `mods` folder)
+          - Sentinel command-line distribution (ZIP and TAR)
+          - `SHA256SUMS.txt` and per-file `.sha256` checksums
+
+          Verify integrity with the published checksums, for example:
+
+              sha256sum -c SHA256SUMS.txt
+
+          Note: a checksum verifies file **integrity** (that the download was not
+          corrupted or altered relative to this list). It does not by itself prove
+          publisher authenticity.
+
+          Source and development jars are intentionally not published as release
+          downloads.
+          EOF
+          # Upload only the production artifacts and their checksums (never -sources/-dev).
+          gh release create "$GITHUB_REF_NAME" \
+            "$FABRIC_JAR" "$FABRIC_JAR.sha256" \
+            "$ZIP" "$ZIP.sha256" \
+            "$TAR" "$TAR.sha256" \
+            SHA256SUMS.txt \
+            --title "SecuroGuard $GITHUB_REF_NAME" \
+            --notes-file release-notes.md \
+            $PRERELEASE_FLAG

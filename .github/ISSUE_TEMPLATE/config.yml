@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability (private)
+    url: https://github.com/JohnCDupe/SecuroGuard/security/advisories/new
+    about: Do NOT open a public issue for a security vulnerability. Report it privately — see SECURITY.md.
+  - name: Questions and usage help
+    url: https://github.com/JohnCDupe/SecuroGuard/discussions
+    about: Ask usage questions and discuss SecuroGuard with the community.
