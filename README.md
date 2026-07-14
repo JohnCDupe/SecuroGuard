@@ -29,8 +29,8 @@ running it.**
 > starts. See [Limitations](#limitations--threat-model).
 
 > [!NOTE]
-> **Status: pre-release (`0.1.0-SNAPSHOT`).** The code is tested and the release
-> pipeline is in place, but no release candidate has been published yet. See
+> **Status: pre-release (`0.1.0-SNAPSHOT`).** Automated builds and tests pass on
+> Ubuntu and Windows, but no release candidate has been published yet. See
 > [Project status](#project-status).
 
 ---
@@ -299,9 +299,9 @@ distributed with, or required at runtime by, SecuroGuard.
 ## Project status
 
 This is a pre-release project (`0.1.0-SNAPSHOT`). The canonical source repository is
-[JohnCDupe/SecuroGuard](https://github.com/JohnCDupe/SecuroGuard). Before the first
-release candidate, the project still requires live CI validation plus the manual
-in-game and Prism checklist in [docs/demo.md](docs/demo.md).
+[JohnCDupe/SecuroGuard](https://github.com/JohnCDupe/SecuroGuard). Live CI validation
+passes on Ubuntu and Windows. Before the first release candidate, the manual in-game
+and Prism checklist in [docs/demo.md](docs/demo.md) still needs to be completed.
 
 The version stays at `0.1.0-SNAPSHOT` until a tagged release is cut.
 
